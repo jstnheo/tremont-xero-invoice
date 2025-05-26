@@ -1,5 +1,5 @@
-const { upsertContact } = require('./lib/upsertContact');
-const { createInvoice } = require('./lib/createInvoice');
+const { upsertContact } = require('../lib/upsertContact');
+const { createInvoice } = require('../lib/createInvoice');
 
 const reservation = {
   guest: {
