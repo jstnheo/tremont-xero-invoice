@@ -1,7 +1,10 @@
+require('dotenv').config();
+
 const { upsertContact } = require('../lib/upsertContact');
 const { createInvoice } = require('../lib/createInvoice');
 
 const reservation = {
+  platform: "airbnb", // ✅ important for correct hosting fee account code
   guest: {
     first_name: "Myranda",
     last_name: "Libunao",
@@ -9,12 +12,11 @@ const reservation = {
   },
   check_in: "2025-07-05T15:00:00-07:00",
   check_out: "2025-07-07T11:00:00-07:00",
-  code: "HMMHXEM9FN",
+  code: "HMMHXEM9FN-TEST",
   nights: 2,
   properties: [
     {
-        name: "Unit 2",
-        tracking_option: "Unit 2" // ✅ Add this
+      name: "Unit 2"
     }
   ],
   financials: {
@@ -22,6 +24,9 @@ const reservation = {
       revenue: { amount: 60819 },
       host_fees: [
         { label: "Host Service Fee", amount: -1881 }
+      ],
+      discounts: [
+        { label: "Weekly Discount", amount: 1000 }
       ]
     },
     guest: {
@@ -35,7 +40,7 @@ const reservation = {
 
 (async () => {
   const fullName = `${reservation.guest.first_name} ${reservation.guest.last_name}`;
-  const phone = reservation.guest.phone_numbers[0];
+  const phone = reservation.guest.phone_numbers?.[0] || '';
 
   const contact = await upsertContact({ name: fullName, phone });
   const invoice = await createInvoice(contact, reservation);
