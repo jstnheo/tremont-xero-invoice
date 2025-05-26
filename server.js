@@ -1,21 +1,25 @@
 require('dotenv').config();
 const express = require('express');
-const { createInvoice } = require('./services/xeroService');
+const bodyParser = require('body-parser');
 
 const app = express();
-app.use(express.json());
+const PORT = 3000;
 
-app.post('/new-booking', async (req, res) => {
-  try {
-    await createInvoice(req.body);
-    res.sendStatus(200);
-  } catch (err) {
-    console.error("❌ Error creating invoice:", err);
-    res.status(500).send("Invoice creation failed");
-  }
+// Middleware to parse JSON
+app.use(bodyParser.json());
+
+// Test route
+app.get('/', (req, res) => {
+  res.send('👋 Server is running');
 });
 
-const PORT = process.env.PORT || 3000;
+// Webhook logging route
+app.post('/log', (req, res) => {
+  console.log('📦 Received reservation from Hospitable:\n', JSON.stringify(req.body, null, 2));
+  res.sendStatus(200);
+});
+
+// Start the server
 app.listen(PORT, () => {
-  console.log(`🚀 Webhook server listening on port ${PORT}`);
+  console.log(`🚀 Webhook server listening on http://localhost:${PORT}`);
 });
