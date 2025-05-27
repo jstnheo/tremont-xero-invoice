@@ -19,30 +19,38 @@ const supabase = createClient(
 
 // 🪵 Log webhook to Supabase
 async function logWebhook(payload) {
+  const safePayload = typeof payload === 'object' && payload !== null
+    ? payload
+    : { error: 'Invalid payload', raw: String(payload) };
+
   const { error } = await supabase.from('webhook_logs').insert([
     {
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
-      source: 'webhook',
-      payload
+      source: 'web_hook',
+      payload: safePayload
     }
   ]);
-  if (error) console.error('❌ Failed to log webhook:', error.message);
-  else console.log('📦 Webhook payload logged to Supabase');
+
+  if (error) {
+    console.error('❌ Failed to log webhook:', error.message);
+  } else {
+    console.log('📦 Webhook payload logged to Supabase');
+  }
 }
 
 // 📨 Handle webhook from Hospitable
 app.post('/', async (req, res) => {
   console.log('📨 Received POST webhook');
 
+  // 🪵 Log raw webhook for debugging
+  await logWebhook(req.body);
+
   const reservation = req.body?.data;
   if (!reservation) {
     console.error('❌ No reservation data in webhook');
     return res.status(400).send('Invalid payload');
   }
-
-  // 🪵 Log raw webhook for debugging
-  await logWebhook(req.body);
 
   try {
     const fullName = `${reservation.guest.first_name} ${reservation.guest.last_name}`;
