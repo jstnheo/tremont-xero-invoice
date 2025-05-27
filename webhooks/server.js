@@ -3,11 +3,33 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { upsertContact } = require('../lib/upsertContact');
 const { createInvoice } = require('../lib/createInvoice');
+const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
+
+// 🔌 Connect to Supabase
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+// 🪵 Log webhook to Supabase
+async function logWebhook(payload) {
+  const { error } = await supabase.from('webhook_logs').insert([
+    {
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      source: 'webhook',
+      payload
+    }
+  ]);
+  if (error) console.error('❌ Failed to log webhook:', error.message);
+  else console.log('📦 Webhook payload logged to Supabase');
+}
 
 // 📨 Handle webhook from Hospitable
 app.post('/', async (req, res) => {
@@ -18,6 +40,9 @@ app.post('/', async (req, res) => {
     console.error('❌ No reservation data in webhook');
     return res.status(400).send('Invalid payload');
   }
+
+  // 🪵 Log raw webhook for debugging
+  await logWebhook(req.body);
 
   try {
     const fullName = `${reservation.guest.first_name} ${reservation.guest.last_name}`;
