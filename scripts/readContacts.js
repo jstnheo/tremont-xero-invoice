@@ -1,6 +1,6 @@
 require('dotenv').config();
 const axios = require('axios');
-const { getXeroAuthHeaders } = require('../lib/xeroAuth');
+const { getXeroAuthHeaders } = require('../lib/xeroAuth'); // ← here
 
 async function readContacts() {
   try {

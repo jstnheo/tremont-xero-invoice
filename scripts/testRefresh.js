@@ -1,4 +1,4 @@
-const { getXeroAuthHeaders } = require('../lib/xeroAuth');
+const { getXeroAuthHeaders } = require('../lib/xeroAuth'); // ← here
 
 (async () => {
   const headers = await getXeroAuthHeaders();
